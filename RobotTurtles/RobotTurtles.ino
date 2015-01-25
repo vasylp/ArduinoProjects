@@ -2,6 +2,7 @@
 #include "RTDefinitions.h"
 #include "RTGameData.h"
 #include "Sprites.h"
+#include "logo.h"
 
 U8GLIB_ST7920_128X64_4X u8g(13, 11, 10, U8G_PIN_NONE);
 
@@ -26,11 +27,12 @@ void debugPrint(){
 void setup()
 {
 	Serial.begin(9600);
+	u8g.setRot180();
 	TURTLE_X = 0;
 	TURTLE_Y = BOARD_HEIGHT-1;
 	TURTLE_DIRECTION = DIRECTION_NORTH;
 	TURTLE_MOVE = 0;
-	GAME_STATUS = GAME_RUNNING;
+	GAME_STATUS = GAME_LOGO;
 }
 
 void loop()
@@ -41,14 +43,21 @@ void loop()
 			drawBoard();
 			drawTurtle();
 		}
-		else{
+		else if (GAME_STATUS == GAME_LOGO) {
+			drawLogo();
+		}else{
 			drawGameStatus();
 		}
 	} while (u8g.nextPage());
 
 	moveTurtle();
-
-	delay(450);
+	if (GAME_STATUS == GAME_LOGO) {
+		delay(LOGO_DELAY);
+		GAME_STATUS = GAME_RUNNING;
+	}
+	else {
+		delay(450);
+	}
 }
 
 void drawBoard(){
@@ -69,6 +78,10 @@ void drawBoard(){
 			u8g.drawXBMP(BOARD_TO_COORD(x), BOARD_TO_COORD(y), SPRITE_WIDTH, SPRITE_HEIGHT, sprite);
 		}
 	}
+}
+
+void drawLogo(){
+	u8g.drawXBMP((SCREEN_WIDTH - LOGO_WIDTH) / 2, 0, LOGO_WIDTH, LOGO_HEIGHT, LOGO_IMAGE);
 }
 
 void drawTurtle(){
@@ -105,7 +118,10 @@ void drawGameStatus(){
 }
 
 void moveTurtle(){
-	if (GAME_STATUS == GAME_RUNNING && TURTLE_MOVE >= MOVES_COUNT) {
+	if (GAME_STATUS != GAME_RUNNING){
+		return;
+	}
+	if (TURTLE_MOVE >= MOVES_COUNT) {
 		GAME_STATUS = GAME_OUT_OF_MOVES;
 		return;
 	}
