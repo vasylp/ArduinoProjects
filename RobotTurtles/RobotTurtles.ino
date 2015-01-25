@@ -48,7 +48,7 @@ void loop()
 
 	moveTurtle();
 
-	delay(1000);
+	delay(450);
 }
 
 void drawBoard(){
